@@ -1,0 +1,16 @@
+App:
+    name: "global-probe"
+    version: "1.0.0"
+    env: "dev"
+    tribe: "netmonk"
+probe:
+    normalTimeout: 5
+log:
+    level: "info"
+    format: "json"
+
+APM:
+    enabled: false
+    host: "localhost"
+    port: 8126
+    rate: 1

@@ -1,0 +1,13 @@
+probes:
+  - ip: "localhost:8080/metrics"
+    interval: 5
+    probe_config:
+      method: "Get"
+      authorization: null
+  - ip: "localhost:8080/metrics"
+    interval: 10
+    probe_config:
+      method: "Get"
+      authorization: null
+      headers:
+        Content-Type: application/json

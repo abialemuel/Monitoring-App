@@ -3,29 +3,57 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/sirupsen/logrus"
+	"gitlab.com/telkom/monitoring-app/config"
 	mainCfg "gitlab.com/telkom/monitoring-app/config"
 	"gitlab.com/telkom/monitoring-app/libs/logger"
 	"gitlab.playcourt.id/telkom-digital/dpe/modules/tlkm/infrastructure/apm"
+	proto "gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/Proto/interfaces"
 	"gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter/blackbox"
-	"gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter/snmp"
+	"go.opentelemetry.io/otel/attribute"
+	"gopkg.in/yaml.v2"
 )
 
 var (
-	blackboxProbe blackbox.Blackbox
-	snmpProbe     snmp.Snmp
-	err           error
-	APM           *apm.APM
+	blackboxProbe  blackbox.Blackbox
+	err            error
+	APM            *apm.APM
+	defaultModules = []*proto.Module{
+		{
+			Name: "blackbox",
+			Config: map[string]string{
+				"moduleName": "http_2xx",
+			},
+		},
+	}
+	log logger.Logger
 )
 
 func main() {
 	// config
 	cfg := initializeConfig("config.yaml")
 
-	log := initializeLogger(cfg)
+	log = initializeLogger(cfg)
+
+	// Load probes configuration from YAML file
+	fileData, err := ioutil.ReadFile("probe_config.yaml")
+	if err != nil {
+		log.Get().Error(err)
+		panic(err)
+	}
+
+	var probesConfig config.ProbesConfig
+	err = yaml.Unmarshal(fileData, &probesConfig)
+	if err != nil {
+		log.Get().Error(err)
+		panic(err)
+	}
 
 	// initialize apm
 	if cfg.Get().APM.Enabled {
@@ -54,9 +82,6 @@ func main() {
 	// initialize blackbox
 	blackboxProbe = initializeBlackbox(cfg.Get().Probe.NormalTimeout, moduleLogLevel)
 
-	// initialize snmp
-	snmpProbe = initializeSnmp(cfg.Get().Probe.NormalTimeout, moduleLogLevel)
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -64,7 +89,10 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
-	// run primary consumer
+	// Create and start probes
+	for _, probe := range probesConfig.Probes {
+		go startProbe(ctx, probe)
+	}
 
 	// Wait for an interrupt signal
 	select {
@@ -106,10 +134,52 @@ func initializeBlackbox(timeout float64, logLevel string) blackbox.Blackbox {
 	return blackboxProbe
 }
 
-func initializeSnmp(timeout float64, logLevel string) snmp.Snmp {
-	snmpProbe, err := snmp.New(0, timeout, logLevel)
-	if err != nil {
-		panic(err)
+func startProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
+	ticker := time.NewTicker(time.Duration(probe.Interval) * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			executeProbe(ctx, probe)
+		case <-ctx.Done():
+			return
+		}
 	}
-	return snmpProbe
+}
+
+func executeProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
+	ctx, span := apm.StartTransaction(ctx, "WorkerProbe.Serve")
+	defer apm.EndTransaction(span)
+	apm.AddEvent(ctx, "ProbeDevice",
+		attribute.String("ip", probe.Ip),
+		attribute.Int("interval", probe.Interval),
+	)
+	log.Get().WithFields(logrus.Fields{
+		"trace_id": apm.GetTraceID(ctx),
+		"ip":       probe.Ip,
+		"interval": probe.Interval,
+	}).Info("ProbeStarted")
+
+	auth := &proto.Authorization{}
+	if probe.ProbeConfig.Authorization != nil {
+		auth = &proto.Authorization{
+			Username: probe.ProbeConfig.Authorization.Username,
+			Password: probe.ProbeConfig.Authorization.Password,
+		}
+	}
+	workerProbe := proto.WorkerProbe{
+		Ip:       probe.Ip,
+		Interval: int32(probe.Interval),
+		Modules:  defaultModules,
+		ProbeConfig: &proto.WorkerProbe_Website{
+			Website: &proto.WebsiteConfig{
+				Method:        probe.ProbeConfig.Method,
+				Headers:       probe.ProbeConfig.Headers,
+				Authorization: auth,
+			},
+		},
+	}
+
+	blackboxProbe.Call(probe.Ip, defaultModules[0].Config["moduleName"], &workerProbe)
 }
