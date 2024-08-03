@@ -109,14 +109,6 @@ The main entry point of the application. It performs the following functions:
 - Starts the probes defined in the configuration.
 - Handles graceful shutdown on receiving interrupt signals.
 
-### Functions
-
-- `initializeLogger(cfg mainCfg.Config) logger.Logger`: Initializes the logger.
-- `initializeConfig(path string) mainCfg.Config`: Initializes the configuration.
-- `initializeBlackbox(timeout float64, logLevel string) blackbox.Blackbox`: Initializes the Blackbox probe.
-- `startProbe(ctx context.Context, probe mainCfg.WorkerProbe)`: Starts a probe with periodic execution.
-- `executeProbe(ctx context.Context, probe mainCfg.WorkerProbe)`: Executes a single probe and logs the results.
-
 ## Example `probe_config.yaml`
 
 ```yaml
