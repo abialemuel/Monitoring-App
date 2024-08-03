@@ -23,7 +23,7 @@ The APM integration in this service leverages Datadog to provide synthetic monit
 ### How It Works
 
 - **Initialization**: The APM service is initialized using settings from `config.yaml`. If APM is enabled, it connects to Datadog and sets up tracing.
-- **Probing with Traces**: Each probe execution is wrapped in a Datadog trace. This captures the start and end times, any errors, and additional metadata such as the IP address and interval of the probe.
+- **Probing with Traces**: Each probe execution is wrapped in a Datadog trace. This captures the start and end times, any errors, and additional metadata such as the IP address and interval of the probe. This well-organized and searchable in Datadog, making it easier to filter and analyze probe executions by IP address.
 - **Synthetic Monitoring**: By capturing these traces, Datadog can perform synthetic monitoring, simulating user interactions and measuring performance metrics over time.
 
 
