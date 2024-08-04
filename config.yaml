@@ -1,5 +1,5 @@
 App:
-    name: "global-probe"
+    name: "monitoring-app"
     version: "1.0.0"
     env: "dev"
     tribe: "netmonk"
@@ -10,7 +10,7 @@ log:
     format: "json"
 
 APM:
-    enabled: false
-    host: "localhost"
+    enabled: true
+    host: "datadog-agent"
     port: 8126
     rate: 1

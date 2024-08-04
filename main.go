@@ -72,6 +72,7 @@ func main() {
 			log.Get().Error(err)
 			panic(err)
 		}
+		fmt.Println("APM started...")
 		defer APM.EndAPM()
 	}
 
@@ -108,7 +109,7 @@ func main() {
 }
 
 func initializeLogger(cfg mainCfg.Config) logger.Logger {
-	fmt.Println("Global Probe started...")
+	fmt.Println("Monitoring-app started...")
 	log := logger.New().Init(logger.Config{
 		Level:  cfg.Get().Log.Level,
 		Format: cfg.Get().Log.Format,
