@@ -1,13 +1,22 @@
 probes:
-  - ip: "localhost:8080/metrics"
+  - ip: "https://api.ipify.org?format=json"
     interval: 5
     probe_config:
-      method: "Get"
+      method: "GET"
       authorization: null
-  - ip: "localhost:8080/metrics"
+      headers:
+        Content-Type: application/json
+  - ip: "https://ipinfo.io/json"
     interval: 10
     probe_config:
-      method: "Get"
+      method: "GET"
+      authorization: null
+      headers:
+        Content-Type: application/json
+  - ip: "https://wrong-ip-example.com"
+    interval: 10
+    probe_config:
+      method: "GET"
       authorization: null
       headers:
         Content-Type: application/json

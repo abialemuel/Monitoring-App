@@ -1,7 +1,7 @@
 
 # Monitoring App
 
-This service probes devices using the Blackbox Prometheus module. You can configure the devices to probe by adding entries to the `probe_config.yaml` file.
+This service probes devices using the Blackbox Prometheus module created and managed by DPE https://gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter. You can configure the devices to probe by adding entries to the `probe_config.yaml` file.
 
 ## Features
 

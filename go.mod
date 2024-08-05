@@ -7,7 +7,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
-	gitlab.playcourt.id/telkom-digital/dpe/modules/tlkm v0.0.27
+	gitlab.playcourt.id/telkom-digital/dpe/modules/tlkm v0.0.29
 	gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/Proto v0.0.7
 	gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter v0.0.9
 	go.opentelemetry.io/otel v1.19.0
@@ -23,7 +23,6 @@ require (
 	github.com/DataDog/go-tuf v1.0.2-0.5.2 // indirect
 	github.com/DataDog/sketches-go v1.4.2 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/alecthomas/kingpin/v2 v2.4.0 // indirect
 	github.com/alecthomas/units v0.0.0-20231202071711-9a357b53e9c9 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -42,7 +41,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gosnmp/gosnmp v1.37.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
@@ -70,7 +68,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tinylib/msgp v1.1.8 // indirect
-	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.45.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.19.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.19.0 // indirect

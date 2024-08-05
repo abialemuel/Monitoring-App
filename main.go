@@ -142,7 +142,7 @@ func startProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 	for {
 		select {
 		case <-ticker.C:
-			executeProbe(ctx, probe)
+			go executeProbe(ctx, probe)
 		case <-ctx.Done():
 			return
 		}
@@ -182,5 +182,26 @@ func executeProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 		},
 	}
 
-	blackboxProbe.Call(probe.Ip, defaultModules[0].Config["moduleName"], &workerProbe)
+	res, err := blackboxProbe.Call(probe.Ip, defaultModules[0].Config["moduleName"], &workerProbe)
+	if err != nil || !res.Success() {
+		if err == nil {
+			err = fmt.Errorf("probe metrics failed")
+		}
+
+		log.Get().WithFields(logrus.Fields{
+			"trace_id": apm.GetTraceID(ctx),
+			"ip":       probe.Ip,
+			"interval": probe.Interval,
+		}).Error(err)
+
+		apm.AddEvent(ctx, "ProbeDeviceErr",
+			attribute.String("error", err.Error()),
+		)
+		return
+	}
+	log.Get().WithFields(logrus.Fields{
+		"trace_id": apm.GetTraceID(ctx),
+		"ip":       probe.Ip,
+		"interval": probe.Interval,
+	}).Info("ProbeFinished")
 }

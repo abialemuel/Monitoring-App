@@ -35,6 +35,8 @@ services:
       # DD_DOGSTATSD_SOCKET: /opt/datadog/apm/inject/run/dsd.socket
       DD_LOGS_ENABLED: true
       DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: true
+      DD_COLLECT_DOCKER_METRICS: true
+      DD_DOCKER_LABELS_AS_TAGS: '{"com.docker.compose.service":"monitoring-app"}'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc/:/host/proc/:ro

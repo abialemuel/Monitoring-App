@@ -2,7 +2,7 @@ App:
     name: "monitoring-app"
     version: "1.0.0"
     env: "dev"
-    tribe: "netmonk"
+    tribe: "dpe"
 probe:
     normalTimeout: 5
 log:
