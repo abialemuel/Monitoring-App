@@ -135,3 +135,7 @@ probes:
 
 This configuration file defines two probes: one probing every 5 seconds and the other every 10 seconds, with different HTTP methods and headers.
 
+## Example result Datadog Trace
+
+![image.png](./image.png)
+
