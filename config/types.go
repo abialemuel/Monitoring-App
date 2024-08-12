@@ -47,14 +47,19 @@ type WebsiteConfig struct {
 	Method        string            `yaml:"method"`
 	Authorization *Authorization    `yaml:"authorization"`
 	Headers       map[string]string `yaml:"headers"`
+	Body          string            `yaml:"body"`
+	Query         map[string]string `yaml:"query"`
 }
 
 type WorkerProbe struct {
-	Ip          string         `yaml:"ip"`
-	LastUpdated int64          `yaml:"last_updated"`
-	Interval    int            `yaml:"interval"`
-	Modules     []*Module      `yaml:"modules"`
-	ProbeConfig *WebsiteConfig `yaml:"probe_config"`
+	Tribe        string         `yaml:"tribe"`
+	Operation    string         `yaml:"operation"`
+	Order        int            `yaml:"order"`
+	Ip           string         `yaml:"ip"`
+	Dependencies []string       `yaml:"dependencies"`
+	Interval     int            `yaml:"interval"`
+	Modules      []*Module      `yaml:"modules"`
+	ProbeConfig  *WebsiteConfig `yaml:"probe_config"`
 }
 
 type ProbesConfig struct {

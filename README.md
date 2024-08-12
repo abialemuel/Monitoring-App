@@ -1,18 +1,18 @@
 
 # Monitoring App
 
-This service probes devices using the Blackbox Prometheus module created and managed by DPE https://gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter. You can configure the devices to probe by adding entries to the `probe_config.yaml` file.
+This service probes devices using the http module. You can configure the devices to probe by adding entries to the `probe_config.yaml` file.
 
 ## Features
 
-- **Performance Monitoring**: Continuously monitors device performance using the Blackbox module.
+- **Performance Monitoring**: Continuously monitors device performance using the http module.
 - **Error Tracking and Diagnostics**: Automatically detects and logs errors encountered during probing.
 - **Real-Time Alerts**: Integrates with Datadog to provide real-time alerts on performance issues.
 - **Code-Level Diagnostics**: Uses Datadog APM for tracing probe executions and diagnosing latency issues.
 
 ## APM Integration
 
-The APM integration in this service leverages Datadog to provide synthetic monitoring. By wrapping the execution of the Blackbox module with Datadog traces, we can monitor the latency and performance of each probe.
+The APM integration in this service leverages Datadog to provide synthetic monitoring. By wrapping the execution of the http module with Datadog traces, we can monitor the latency and performance of each probe.
 
 ### Benefits
 
@@ -31,7 +31,6 @@ The APM integration in this service leverages Datadog to provide synthetic monit
 
 - Go 1.18+
 - Git
-- Access to library https://gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/prometheus-exporter
 
 
 ## Installation
