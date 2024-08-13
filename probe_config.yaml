@@ -1,22 +1,42 @@
 probes:
-  - ip: "https://api.ipify.org?format=json"
+  - operation: "get_ip"
+    tribe: "dpe"
+    ip: "https://api.ipify.org"
     interval: 5
     probe_config:
       method: "GET"
       authorization: null
+      query:
+        format: "json"
       headers:
         Content-Type: application/json
-  - ip: "https://ipinfo.io/json"
-    interval: 10
+  - operation: "get_ip_info"
+    tribe: "dpe"
+    ip: "https://api.ipify.org"
+    interval: 5
     probe_config:
       method: "GET"
       authorization: null
+      query:
+        format: "json"
       headers:
         Content-Type: application/json
-  - ip: "https://wrong-ip-example.com"
-    interval: 10
+  - operation: "check_service"
+    tribe: "dpe"
+    ip: "https://example.com/check"
+    dependencies: ["get_ip", "get_ip_info"]
+    interval: 4
     probe_config:
-      method: "GET"
+      method: "POST"
       authorization: null
+      query:
+        formatee: "{{get_ip_info.ip}}"
+        coba: "lainnya"
       headers:
         Content-Type: application/json
+        Authorization: "Bearer {{get_ip_info.ip}}"
+      body: |
+        {
+          "ip": "{{get_ip.ip}}",
+          "city": "{{get_ip_info.ip}}",
+        }
