@@ -1,14 +1,16 @@
 
 # Monitoring App
 
-This service probes APIs using the http module. You can configure the APIs to probe by adding entries to the `probe_config.yaml` file.
+This service monitors APIs using the HTTP module. You can configure the APIs to be monitored by adding entries to the `probe_config.yaml` file.
 
 ## Features
 
-- **Performance Monitoring**: Continuously monitors device performance using the http module.
+- **Performance Monitoring**: Continuously monitors API performance using the http module.
 - **Error Tracking and Diagnostics**: Automatically detects and logs errors encountered during probing.
 - **Real-Time Alerts**: Integrates with Datadog to provide real-time alerts on performance issues.
 - **Code-Level Diagnostics**: Uses Datadog APM for tracing probe executions and diagnosing latency issues.
+- **Dependency Handling**: Supports making requests that depend on the results of previous probes.
+
 
 ## APM Integration
 
@@ -59,20 +61,63 @@ This file contains the main configuration for the service, including logging lev
 
 ### `probe_config.yaml`
 
-This file defines the probes to be used by the service. An example structure for a probe is:
+This file defines the probes to be used by the service, supporting dependencies between probes. Each probe can use the results from other probes in its configuration. An example structure for a probe is:
 
 ```yaml
 probes:
-  - ip: "192.168.1.1"
+  - operation: "get_ip"
+    tribe: "dpe"
+    ip: "https://api.ipify.org"
     interval: 5
-    probeConfig:
+    probe_config:
       method: "GET"
+      authorization: null
+      query:
+        format: "json"
       headers:
-        "User-Agent": "Mozilla/5.0"
-      authorization:
-        username: "admin"
-        password: "admin123"
+        Content-Type: application/json
+  - operation: "get_ip_info"
+    tribe: "dpe"
+    ip: "https://api.ipify.org"
+    interval: 5
+    probe_config:
+      method: "GET"
+      authorization: null
+      query:
+        format: "json"
+      headers:
+        Content-Type: application/json
+  - operation: "check_service"
+    tribe: "dpe"
+    ip: "https://example.com/check"
+    dependencies: ["get_ip", "get_ip_info"]
+    interval: 4
+    probe_config:
+      method: "POST"
+      authorization: null
+      query:
+        formatee: "{{get_ip_info.ip}}"
+        coba: "lainnya"
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {{get_ip_info.ip}}"
+      body: |
+        {
+          "ip": "{{get_ip.ip}}",
+          "city": "{{get_ip_info.ip}}"
+        }
+
 ```
+
+### Explanation
+This configuration file defines three probes, where the last probe (check_service) depends on the results of the first two probes (get_ip and get_ip_info).
+
+- **operation**: A unique identifier for each probe. This name is used to refer to the probe in dependencies.
+- **tribe**: A grouping label for the probe, useful for organizing and filtering.
+- **ip**: The target URL of the probe.
+- **dependencies**: A list of other operations that this probe depends on. The probe can use the results of these dependencies in its configuration.
+- **interval**: The time interval (in seconds) between each probe execution.
+- **probe_config**: The specific configuration for the HTTP request, including method, headers, query parameters, and body. Placeholders (e.g., `{{get_ip.ip}}`) can be used to insert the results of dependencies.
 
 ## Running the Service
 
@@ -108,31 +153,6 @@ The main entry point of the application. It performs the following functions:
 - Starts the probes defined in the configuration.
 - Handles graceful shutdown on receiving interrupt signals.
 
-## Example `probe_config.yaml`
-
-```yaml
-probes:
-  - ip: "192.168.1.1"
-    interval: 5
-    probeConfig:
-      method: "GET"
-      headers:
-        "User-Agent": "Mozilla/5.0"
-      authorization:
-        username: "admin"
-        password: "admin123"
-  - ip: "192.168.1.2"
-    interval: 10
-    probeConfig:
-      method: "POST"
-      headers:
-        "Content-Type": "application/json"
-      authorization:
-        username: "user"
-        password: "user123"
-```
-
-This configuration file defines two probes: one probing every 5 seconds and the other every 10 seconds, with different HTTP methods and headers.
 
 ## Example result Datadog Trace
 
