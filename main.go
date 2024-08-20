@@ -12,13 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/abialemuel/poly-kit/infrastructure/apm"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/telkom/monitoring-app/config"
 	mainCfg "gitlab.com/telkom/monitoring-app/config"
 	"gitlab.com/telkom/monitoring-app/helper"
 	"gitlab.com/telkom/monitoring-app/libs/logger"
-	"gitlab.playcourt.id/telkom-digital/dpe/modules/tlkm/infrastructure/apm"
-	proto "gitlab.playcourt.id/telkom-digital/dpe/std/impl/netmonk/Proto/interfaces"
 	"go.opentelemetry.io/otel/attribute"
 	"gopkg.in/yaml.v2"
 )
@@ -138,14 +137,6 @@ func executeProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 		"interval": probe.Interval,
 	}).Info("ProbeStarted")
 
-	auth := &proto.Authorization{}
-	if probe.ProbeConfig.Authorization != nil {
-		auth = &proto.Authorization{
-			Username: probe.ProbeConfig.Authorization.Username,
-			Password: probe.ProbeConfig.Authorization.Password,
-		}
-	}
-
 	var body string
 
 	// Resolve dependencies dynamically
@@ -211,8 +202,8 @@ func executeProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 	for key, value := range probe.ProbeConfig.Headers {
 		req.Header.Set(key, value)
 	}
-	if auth.Username != "" && auth.Password != "" {
-		req.SetBasicAuth(auth.Username, auth.Password)
+	if probe.ProbeConfig.Authorization != nil {
+		req.SetBasicAuth(probe.ProbeConfig.Authorization.Username, probe.ProbeConfig.Authorization.Password)
 	}
 
 	if probe.ProbeConfig.Query != nil {
