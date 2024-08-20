@@ -1,7 +1,7 @@
 
 # Monitoring App
 
-This service probes devices using the http module. You can configure the devices to probe by adding entries to the `probe_config.yaml` file.
+This service probes APIs using the http module. You can configure the APIs to probe by adding entries to the `probe_config.yaml` file.
 
 ## Features
 
@@ -17,7 +17,7 @@ The APM integration in this service leverages Datadog to provide synthetic monit
 ### Benefits
 
 1. **End-to-End Monitoring**: The integration allows for detailed end-to-end monitoring of probe execution, from initiation to completion.
-2. **Latency Tracking**: Datadog traces provide insights into the latency of each probe, helping identify slow or unresponsive devices.
+2. **Latency Tracking**: Datadog traces provide insights into the latency of each probe, helping identify slow or unresponsive APIs.
 3. **Error Analysis**: Detailed trace logs assist in diagnosing errors and understanding where failures occur in the probing process.
 
 ### How It Works
