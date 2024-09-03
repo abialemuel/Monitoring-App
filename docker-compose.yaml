@@ -1,44 +1,110 @@
+
 version: '3'
 services:
   monitoring-app:
     build:
       context: .
-      args:
-        - GITLAB_ID=${GIT_USERNAME}
-        - GITLAB_TOKEN=${GIT_ACCESS_TOKEN}
     depends_on:
-      - datadog-agent
+      - otel-collector
     env_file:
       - .env
     ports:
       - "8080:8080"
     restart: always
 
-
-  datadog-agent:
-    container_name: datadog-agent
-    image: "gcr.io/datadoghq/agent:latest"
+  # OpenTelemetry Collector Service
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    depends_on:
+      - jaeger
+      # - apm-server
     ports:
-      - 4317:4317
-      - 4318:4318
-      - 8126:8126
-    pid: host
-    environment:
-      DD_API_KEY: 2a86dbc9621e5f74dcc025e7924f0dae
-      DD_SITE: "us5.datadoghq.com"
-      DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT: 0.0.0.0:4317
-      # DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT: 0.0.0.0:4318  # Adding HTTP endpoint
-      # DD_APM_ENABLED: true
-      # DD_APM_NON_LOCAL_TRAFFIC: true
-      # DD_SYSTEM_PROBE_ENABLED: true
-      # DD_APM_RECEIVER_SOCKET: /opt/datadog/apm/inject/run/apm.socket
-      # DD_DOGSTATSD_SOCKET: /opt/datadog/apm/inject/run/dsd.socket
-      DD_LOGS_ENABLED: true
-      DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: true
-      DD_COLLECT_DOCKER_METRICS: true
-      DD_DOCKER_LABELS_AS_TAGS: '{"com.docker.compose.service":"monitoring-app"}'
+      - 4317:4317  # gRPC for OTLP metrics, logs, and traces
+      - 4318:4318  # HTTP for OTLP
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /proc/:/host/proc/:ro
-      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro 
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # Access to Docker socket
+      - /proc/:/host/proc/:ro                         # Access to host process information
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro        # Access to cgroup data
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro  # Access to container logs
+    command: ["--config", "/etc/otel-collector-config.yaml"]
+    privileged: true  # Grants the container additional permissions
+    user: "0:0" 
+
+  # Elasticsearch Service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    volumes:
+      - ./esdata:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  # Kibana Service for Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=true
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    restart: always
+    ports:
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 16686:16686
+      - 14268:14268
+
+volumes:
+  esdata:
+    driver: local
+  # datadog-agent:
+  #   container_name: datadog-agent
+  #   image: "gcr.io/datadoghq/agent:latest"
+  #   ports:
+  #     - 4317:4317
+  #     - 4318:4318
+  #     - 8126:8126
+  #   pid: host
+  #   environment:
+  #     DD_API_KEY: 2a86dbc9621e5f74dcc025e7924f0dae
+  #     DD_SITE: "us5.datadoghq.com"
+  #     DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT: 0.0.0.0:4317
+  #     # DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT: 0.0.0.0:4318  # Adding HTTP endpoint
+  #     # DD_APM_ENABLED: true
+  #     # DD_APM_NON_LOCAL_TRAFFIC: true
+  #     # DD_SYSTEM_PROBE_ENABLED: true
+  #     # DD_APM_RECEIVER_SOCKET: /opt/datadog/apm/inject/run/apm.socket
+  #     # DD_DOGSTATSD_SOCKET: /opt/datadog/apm/inject/run/dsd.socket
+  #     DD_LOGS_ENABLED: true
+  #     DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL: true
+  #     DD_COLLECT_DOCKER_METRICS: true
+  #     DD_DOCKER_LABELS_AS_TAGS: '{"com.docker.compose.service":"monitoring-app"}'
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /proc/:/host/proc/:ro
+  #     - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro 
+
+    # apm-server:
+  #   image: docker.elastic.co/beats/elastic-agent-complete:8.9.0
+  #   container_name: apm-server
+  #   depends_on:
+  #     - elasticsearch
+  #   environment:
+  #     - FLEET_SERVER_ENABLE=0  # Disable Fleet Server if not using Fleet
+  #     - ELASTIC_APM_SERVER_URL=http://apm-server:8200
+  #     - ELASTIC_APM_SERVER_HOST=0.0.0.0
+  #     - ELASTIC_APM_SERVER_PORT=8200
+  #     - ELASTIC_APM_ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #     # Optional: set a secret token if using security
+  #     # - ELASTIC_APM_SECRET_TOKEN=your_secret_token
+  #   ports:
+  #     - "8200:8200"

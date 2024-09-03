@@ -11,6 +11,6 @@ log:
 
 APM:
     enabled: true
-    host: "datadog-agent"
-    port: 8126
+    host: "otel-collector"
+    port: 4317
     rate: 1

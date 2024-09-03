@@ -1,0 +1,56 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  filelog:
+    include: ["/var/lib/docker/containers/*/*.log"]  # Path to the Docker log files
+    start_at: end
+    operators:
+      # Step 1: Move the raw log into attributes.log
+      - type: move
+        from: body
+        to: attributes.log
+
+      # Step 2: First level JSON parsing of the initial attributes.log
+      - type: json_parser
+        field: attributes.log
+  docker_stats:
+    endpoint: "unix:///var/run/docker.sock"
+    collection_interval: 10s
+
+
+processors:
+  batch:
+    timeout: 10s
+
+exporters:
+  elasticsearch/traces:
+    endpoints: ["http://elasticsearch:9200"]
+    traces_index: "otel-traces"
+  elasticsearch/metrics:
+    endpoints: ["http://elasticsearch:9200"]
+  elasticsearch/logs:
+    endpoints: ["http://elasticsearch:9200"]
+    logs_index: "otel-logs"
+  otlp/jaeger:
+    endpoint: "http://jaeger:4317"
+    tls:
+      insecure: true
+      
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp,docker_stats]
+      processors: [batch]
+      exporters: [elasticsearch/metrics]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [elasticsearch/traces,otlp/jaeger]
+    logs:
+      receivers: [otlp,filelog]
+      processors: [batch]
+      exporters: [elasticsearch/logs]

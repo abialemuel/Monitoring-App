@@ -34,7 +34,6 @@ WORKDIR /app
 
 COPY --from=builder /app/bin/app /bin/app
 COPY --from=builder /app/config.yaml  ./config.yaml 
-COPY --from=builder /app/blackbox.yml  blackbox.yml
 COPY --from=builder /app/probe_config.yaml  probe_config.yaml
 
 # Check if the binary was copied

@@ -58,7 +58,7 @@ func main() {
 			ServiceVersion: cfg.Get().App.Version,
 			SampleRate:     cfg.Get().APM.Rate,
 		}
-		APM, err = apm.NewAPM(apm.DatadogAPMType, apmPayload)
+		APM, err = apm.NewAPM(apm.OpenTelemetryAPMType, apmPayload)
 		if err != nil {
 			log.Get().Error(err)
 			panic(err)
@@ -132,7 +132,6 @@ func startProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 
 func executeProbe(ctx context.Context, probe mainCfg.WorkerProbe) {
 	log.Get().WithFields(logrus.Fields{
-		"trace_id": apm.GetTraceID(ctx),
 		"ip":       probe.Ip,
 		"interval": probe.Interval,
 	}).Info("ProbeStarted")
