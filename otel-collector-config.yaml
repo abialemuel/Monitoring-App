@@ -39,7 +39,11 @@ exporters:
     endpoint: "http://jaeger:4317"
     tls:
       insecure: true
-      
+  datadog:
+    api:
+      site: us5.datadoghq.com 
+      key: xxxxx
+
 service:
   pipelines:
     metrics:
@@ -49,7 +53,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [elasticsearch/traces,otlp/jaeger]
+      exporters: [elasticsearch/traces,otlp/jaeger,datadog]
     logs:
       receivers: [otlp,filelog]
       processors: [batch]
