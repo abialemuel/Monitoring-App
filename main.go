@@ -79,9 +79,16 @@ func main() {
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 
+	// Create a wait group to wait for all probes to finish
+	var wg sync.WaitGroup
+
 	// Create and start probes
 	for _, probe := range probesConfig.Probes {
-		go startProbe(ctx, probe)
+		wg.Add(1)
+		go func(probe mainCfg.WorkerProbe) {
+			defer wg.Done()
+			startProbe(ctx, probe)
+		}(probe)
 	}
 
 	// Wait for an interrupt signal
@@ -93,6 +100,9 @@ func main() {
 	}
 
 	fmt.Println("Starting graceful shutdown")
+	cancel()
+
+	wg.Wait()
 
 	fmt.Println("Graceful shutdown complete")
 }
