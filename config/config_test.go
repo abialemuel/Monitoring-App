@@ -26,16 +26,16 @@ func (c *Suite) TestConfig() {
 		assert.NotNil(c.T(), err)
 	})
 
-	c.Run("Correct init file path", func() {
-		_, filename, _, _ := runtime.Caller(0)
-		err := c.cnf.Init(filepath.Clean(filepath.Join(filepath.Dir(filename), "mocks/config.yaml")))
-		assert.Nil(c.T(), err)
-	})
-
 	c.Run("Failed config validation", func() {
 		_, filename, _, _ := runtime.Caller(0)
 		err := c.cnf.Init(filepath.Clean(filepath.Join(filepath.Dir(filename), "mocks/config.wrong.validate.yaml")))
 		assert.NotNil(c.T(), err)
+	})
+
+	c.Run("Correct init file path", func() {
+		_, filename, _, _ := runtime.Caller(0)
+		err := c.cnf.Init(filepath.Clean(filepath.Join(filepath.Dir(filename), "mocks/config.yaml")))
+		assert.Nil(c.T(), err)
 	})
 
 	c.Run("Get must be not nil", func() {

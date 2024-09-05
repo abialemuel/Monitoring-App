@@ -1,29 +1,16 @@
 package config
 
-var Service = "global-probe"
+var Service = "monitoring-app"
 var Version = "v1.0.0"
 var GitCommit string
 var OSBuildName string
 var BuildDate string
-
-type Timeout struct {
-	Connect     int `yaml:"connect" validate:"required,min=1,max=60"`
-	Transaction int `yaml:"transaction" validate:"required,min=1,max=300"`
-}
-
-type Pool struct {
-	Producer int `yaml:"producer" validate:"required,min=1,max=500"`
-	Consumer int `yaml:"consumer" validate:"required,min=1,max=50000"`
-}
 
 type MainConfig struct {
 	Log struct {
 		Level  string `yaml:"level" validate:"oneof=trace debug info warn error fatal panic"`
 		Format string `yaml:"format" validate:"oneof=text json"`
 	} `yaml:"log"`
-	Probe struct {
-		NormalTimeout float64 `yaml:"normalTimeout" validate:"required,min=1,max=60"`
-	} `yaml:"probe"`
 	APM struct {
 		Enabled bool     `yaml:"enabled"`
 		Host    string   `yaml:"host"`

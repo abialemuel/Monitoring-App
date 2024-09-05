@@ -1,45 +1,15 @@
 # just sample config file for config testing
 App:
-    name: "global-probe"
+    name: "monitoring-app"
     version: "1.0.0"
     env: "dev"
-    tribe: "netmonk"
-  
+    tribe: "dpe"
 log:
-    level: "debug"
-    format: "text"
-server:
-  listen: ":8881"
-probe:
-  normalTimeout: 2.5
-  deadTimeout: 9.5
-  expiredDuration: 15
-broker:
-  deadConsumer:
-    enabled: true
-    timeout:
-        connect: 10
-        transaction: 10
-    topics:
-      - "dead_worker_probe"
-    consumerPool: 5
-  primary:
-      host:
-        - "kafka:29092"
-      group: "controller-new"
-      topics:
-        - "worker_probe"
-      username: "admin"
-      password: "admin-secret"
-      mechanism: "PLAIN"
-      protocol: "PLAINTEXT"
-      pool:
-        producer: 10
-        consumer: 5
-      timeout:
-          connect: 10
-          transaction: 3
+    level: "info"
+    format: "json"
+
 APM:
     enabled: true
-    host: "jaeger"
+    host: "otel-collector"
     port: 4317
+    rate: 1
