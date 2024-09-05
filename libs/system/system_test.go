@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/abialemuel/monitoring-app/libs/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gitlab.com/telkom/monitoring-app/libs/system"
 )
 
 type Suite struct {

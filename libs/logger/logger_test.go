@@ -3,9 +3,9 @@ package logger_test
 import (
 	"testing"
 
+	"github.com/abialemuel/monitoring-app/libs/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gitlab.com/telkom/monitoring-app/libs/logger"
 )
 
 type Suite struct {
