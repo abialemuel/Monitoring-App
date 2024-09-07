@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	mainCfg "github.com/abialemuel/monitoring-app/config"
 	"github.com/stretchr/testify/assert"
-	mainCfg "gitlab.com/telkom/monitoring-app/config"
 )
 
 func TestInitializeConfig(t *testing.T) {

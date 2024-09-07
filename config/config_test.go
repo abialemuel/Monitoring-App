@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	config "gitlab.com/telkom/monitoring-app/config"
+	config "github.com/abialemuel/monitoring-app/config"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"

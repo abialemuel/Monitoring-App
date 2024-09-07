@@ -12,12 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/abialemuel/monitoring-app/config"
+	mainCfg "github.com/abialemuel/monitoring-app/config"
+	"github.com/abialemuel/monitoring-app/helper"
+	"github.com/abialemuel/monitoring-app/libs/logger"
 	"github.com/abialemuel/poly-kit/infrastructure/apm"
 	"github.com/sirupsen/logrus"
-	"gitlab.com/telkom/monitoring-app/config"
-	mainCfg "gitlab.com/telkom/monitoring-app/config"
-	"gitlab.com/telkom/monitoring-app/helper"
-	"gitlab.com/telkom/monitoring-app/libs/logger"
 	"go.opentelemetry.io/otel/attribute"
 	"gopkg.in/yaml.v2"
 )

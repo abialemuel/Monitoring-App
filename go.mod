@@ -1,4 +1,4 @@
-module gitlab.com/telkom/monitoring-app
+module github.com/abialemuel/monitoring-app
 
 go 1.22.0
 
