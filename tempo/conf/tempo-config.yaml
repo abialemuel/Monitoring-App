@@ -1,0 +1,32 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  ring:
+    kvstore:
+      store: inmemory
+
+ingester:
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+    final_sleep: 0s
+
+compactor:
+  compaction:
+    block_retention: 48h
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+
+overrides:
+  per_tenant_override_config: null
+
+memberlist:
+  join_members:
+    - 127.0.0.1

@@ -1,4 +1,3 @@
-
 version: '3'
 services:
   monitoring-app:
@@ -16,8 +15,9 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     depends_on:
-      - jaeger
-      # - apm-server
+      - tempo
+      - loki
+      - prometheus
     ports:
       - 4317:4317  # gRPC for OTLP metrics, logs, and traces
       - 4318:4318  # HTTP for OTLP
@@ -29,39 +29,54 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro  # Access to container logs
     command: ["--config", "/etc/otel-collector-config.yaml"]
     privileged: true  # Grants the container additional permissions
-    user: "0:0" 
+    user: "0:0"
 
-  # Elasticsearch Service
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+  # Loki Service for Log Aggregation
+  loki:
+    image: grafana/loki:latest
     volumes:
-      - ./esdata:/usr/share/elasticsearch/data
+      - ./loki/data:/data
+      - ./loki/conf:/conf
+    ports:
+      - 3100:3100
+    command: -config.file=/conf/loki-config.yaml
+    
+  # Tempo Service for Traces
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - 3200:3200  # Tempo query port
+    volumes:
+      - ./tempo/conf/tempo-config.yaml:/etc/tempo/tempo-config.yaml  # Add the correct Tempo config file
+    command: ["--config.file=/etc/tempo/tempo-config.yaml"]  # Ensure correct path and configuration are used
+
+
+  # Grafana Service for Visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.security.transport.ssl.enabled=false
-    ports:
-      - 9200:9200
-      - 9300:9300
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+    volumes:
+      - ./grafana-data:/var/lib/grafana
 
-  # Kibana Service for Visualization
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.9.0
+  # Prometheus Service for Metrics
+  prometheus:
+    image: prom/prometheus:latest
     ports:
-      - 5601:5601
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - xpack.security.enabled=true
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    restart: always
-    ports:
-      - 6831:6831/udp
-      - 6832:6832/udp
-      - 16686:16686
-      - 14268:14268
-
+      - 9090:9090  # Prometheus web UI
+    volumes:
+      - ./prometheus/conf/prometheus-config.yaml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      
 volumes:
-  esdata:
+  grafana-data:
     driver: local
